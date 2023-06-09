@@ -42,12 +42,12 @@ const AnotherBox = ({
   const retryTimeoutRef = useRef<number>();
 
   const [messagesList, setMessagesList] = useState([
-    <span>Messages will be displayed here</span>,
+    <span>Another Box will be displayed here</span>,
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
+    const ws = new WebSocket(import.meta.env.SOCKET_URL);
     ws.onopen = () => {
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);

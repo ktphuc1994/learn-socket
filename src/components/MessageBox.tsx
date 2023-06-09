@@ -17,12 +17,12 @@ const receiveTag = (message: string) => (
 
 const MessageBox = () => {
   const [messagesList, setMessagesList] = useState([
-    <span>Messages will be displayed here</span>,
+    <span>MessagesBox will be displayed here</span>,
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const ws = useWebSocketLite({
-    socketUrl: 'wss://socketsbay.com/wss/v2/1/demo/',
+    socketUrl: import.meta.env.SOCKET_URL,
   });
 
   useEffect(() => {
