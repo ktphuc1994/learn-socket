@@ -1,5 +1,5 @@
 // webSocketHook.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface InterfaceWebSocketHook {
   socketUrl: string;
@@ -25,9 +25,17 @@ function useWebSocketLite({
   // state of our connection
   const [readyState, setReadyState] = useState(false);
 
+  // retry timeout ref
+  const retryTimeoutRef = useRef<number>();
+
   useEffect(() => {
     const ws = new WebSocket(socketUrl);
     ws.onopen = () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = undefined;
+        setRetry(defaultRetry);
+      }
       console.log('Connected to socket');
       setReadyState(true);
 
@@ -41,22 +49,22 @@ function useWebSocketLite({
           return false;
         }
       });
+    };
 
-      // receive messages
-      ws.onmessage = (event) => {
-        const msg = formatMessage(event.data);
-        setData({ message: msg, timestamp: getTimestamp() });
-      };
+    // receive messages
+    ws.onmessage = (event) => {
+      const msg = formatMessage(event.data);
+      setData({ message: msg, timestamp: getTimestamp() });
     };
 
     // on close we should update connection state
     // and retry connection
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      console.log('Socket closed', event);
       setReadyState(false);
       // retry logic
       if (retry > 0) {
-        setTimeout(() => {
-          console.log('retry message connection');
+        retryTimeoutRef.current = setTimeout(() => {
           setRetry((retry) => retry - 1);
         }, retryInterval);
       }
@@ -69,8 +77,6 @@ function useWebSocketLite({
 
     // retry dependency here triggers the connection attempt
   }, [retry]);
-
-  console.log({ retry });
 
   return { send, data, readyState };
 }
